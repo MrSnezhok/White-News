@@ -8,77 +8,58 @@
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Content-Security-Policy" content="
   default-src 'self';
-  script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
+  script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://challenges.cloudflare.com;
   style-src 'self' 'unsafe-inline';
   img-src 'self' https: data: blob:;
-  connect-src 'self' https://ppgrmofgafqwmhdpequt.supabase.co;
+  connect-src 'self' https://ppgrmofgafqwmhdpequt.supabase.co https://challenges.cloudflare.com;
   font-src 'self';
+  frame-src https://challenges.cloudflare.com;
   object-src 'none';
-  base-uri 'self';
-  form-action 'self';
+  base-uri 'none';
+  form-action 'none';
+  frame-ancestors 'none';
+  upgrade-insecure-requests;
 ">
 <!--
   ПРИМЕЧАНИЕ ПО CSP:
-  'unsafe-inline' в script-src оставлен только потому, что скрипт встроен в HTML.
-  Чтобы убрать его, вынесите весь <script> в отдельный файл (например, app.js)
-  и замените на: script-src 'self' https://cdn.jsdelivr.net;
+  'unsafe-inline' в script-src и style-src оставлен только потому,
+  что весь код встроен в HTML. Для продакшена лучше вынести в app.js / style.css.
+
+  SRI: замените integrity на реальный хэш из https://www.srihash.org/
+  для https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js
 -->
-<!--
-  SRI: для продакшена рекомендуется закрепить версию и добавить integrity.
-  Пример: <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"
-              integrity="sha384-..."
-              crossorigin="anonymous"></script>
-  Хэш нужно сгенерировать самостоятельно: https://www.srihash.org/
--->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"
-        crossorigin="anonymous"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" integrity="sha384-0w2KAL2YHP6wKOkUDzkCDGgVvfmHnj02DHeQ6XcHOgTfFsGyonKOpShMH1x6nk9o" crossorigin="anonymous"></script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
+
 <style>
 :root{
-  --bg-primary:#0a0e1a;
-  --bg-secondary:#0f1729;
-  --bg-card:#131c31;
-  --bg-hover:#1a2540;
-  --border:#1e2a4a;
-  --accent:#2563eb;
-  --accent-hover:#3b82f6;
-  --accent-glow:rgba(37,99,235,.3);
-  --text-primary:#e8edf7;
-  --text-secondary:#8b98b8;
-  --success:#16a34a;
-  --danger:#f87171;
+  --bg-primary:#0a0e1a;--bg-secondary:#0f1729;--bg-card:#131c31;--bg-hover:#1a2540;
+  --border:#1e2a4a;--accent:#2563eb;--accent-hover:#3b82f6;--accent-glow:rgba(37,99,235,.3);
+  --text-primary:#e8edf7;--text-secondary:#8b98b8;--success:#16a34a;--danger:#f87171;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{overflow-x:hidden}
 body{
   font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
-  background:var(--bg-primary);color:var(--text-primary);
-  min-height:100vh;line-height:1.6;
+  background:var(--bg-primary);color:var(--text-primary);min-height:100vh;line-height:1.6;
   background-image:
     radial-gradient(ellipse at top,rgba(37,99,235,.15),transparent 60%),
     radial-gradient(ellipse at bottom,rgba(37,99,235,.08),transparent 60%);
   background-attachment:fixed;
 }
 .header{
-  position:sticky;top:0;z-index:100;
-  background:rgba(10,14,26,.85);
+  position:sticky;top:0;z-index:100;background:rgba(10,14,26,.85);
   backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
-  border-bottom:1px solid var(--border);
-  padding:1rem 1.5rem;
+  border-bottom:1px solid var(--border);padding:1rem 1.5rem;
 }
-.header-inner{
-  max-width:1200px;margin:0 auto;
-  display:flex;align-items:center;justify-content:space-between;gap:1rem;
-}
+.header-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:1rem}
 .logo{
-  font-size:1.4rem;font-weight:800;letter-spacing:-.5px;
-  display:flex;align-items:center;gap:.5rem;cursor:pointer;
-  background:none;border:none;color:inherit;font-family:inherit;padding:0;
+  font-size:1.4rem;font-weight:800;letter-spacing:-.5px;display:flex;align-items:center;gap:.5rem;
+  cursor:pointer;background:none;border:none;color:inherit;font-family:inherit;padding:0;
 }
 .logo span{color:var(--accent)}
-.logo::before{
-  content:'';width:10px;height:10px;border-radius:50%;
-  background:var(--accent);box-shadow:0 0 12px var(--accent);
-}
+.logo::before{content:'';width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent)}
 .nav{display:flex;gap:.75rem;align-items:center}
 .nav-btn{
   background:transparent;border:1px solid var(--border);color:var(--text-primary);
@@ -89,52 +70,29 @@ body{
 .nav-btn.primary{background:var(--accent);border-color:var(--accent)}
 .nav-btn.primary:hover{background:var(--accent-hover)}
 .container{max-width:1200px;margin:0 auto;padding:2rem 1.5rem 4rem}
-.page-title{
-  font-size:clamp(1.8rem,4vw,2.5rem);font-weight:800;
-  margin-bottom:.5rem;letter-spacing:-1px;
-}
+.page-title{font-size:clamp(1.8rem,4vw,2.5rem);font-weight:800;margin-bottom:.5rem;letter-spacing:-1px}
 .page-subtitle{color:var(--text-secondary);margin-bottom:2rem}
-.news-grid{
-  display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
-  gap:1.5rem;
-}
+.news-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1.5rem}
 .news-card{
-  background:var(--bg-card);border:1px solid var(--border);
-  border-radius:14px;overflow:hidden;transition:all .25s;
-  display:flex;flex-direction:column;cursor:pointer;
+  background:var(--bg-card);border:1px solid var(--border);border-radius:14px;overflow:hidden;
+  transition:all .25s;display:flex;flex-direction:column;cursor:pointer;
 }
-.news-card:hover{
-  transform:translateY(-4px);border-color:var(--accent);
-  box-shadow:0 12px 30px rgba(0,0,0,.4),0 0 0 1px var(--accent);
-}
+.news-card:hover{transform:translateY(-4px);border-color:var(--accent);box-shadow:0 12px 30px rgba(0,0,0,.4),0 0 0 1px var(--accent)}
 .news-card:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.news-card-image{
-  width:100%;height:200px;object-fit:cover;
-  background:var(--bg-secondary);display:block;
-}
+.news-card-image{width:100%;height:200px;object-fit:cover;background:var(--bg-secondary);display:block}
 .news-card-body{padding:1.25rem;display:flex;flex-direction:column;flex:1}
-.news-card-date{
-  font-size:.75rem;color:var(--accent);font-weight:600;
-  text-transform:uppercase;letter-spacing:.5px;margin-bottom:.5rem;
-}
-.news-card-title{
-  font-size:1.15rem;font-weight:700;margin-bottom:.6rem;
-  line-height:1.3;word-break:break-word;
-}
+.news-card-date{font-size:.75rem;color:var(--accent);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.5rem}
+.news-card-title{font-size:1.15rem;font-weight:700;margin-bottom:.6rem;line-height:1.3;word-break:break-word}
 .news-card-content{
-  color:var(--text-secondary);font-size:.92rem;flex:1;
-  white-space:pre-wrap;word-break:break-word;
-  display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;
-  overflow:hidden;
+  color:var(--text-secondary);font-size:.92rem;flex:1;white-space:pre-wrap;word-break:break-word;
+  display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;
 }
 .news-card-footer{
-  display:flex;align-items:center;justify-content:space-between;
-  margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);
-  font-size:.8rem;color:var(--text-secondary);
+  display:flex;align-items:center;justify-content:space-between;margin-top:1rem;padding-top:1rem;
+  border-top:1px solid var(--border);font-size:.8rem;color:var(--text-secondary);
 }
 .news-card-readmore{color:var(--accent);font-weight:600;font-size:.85rem}
 
-/* СТРАНИЦА СТАТЬИ */
 .article-view{display:none}
 .article-view.active{display:block}
 .article-back{
@@ -144,75 +102,39 @@ body{
 }
 .article-back:hover{background:var(--bg-hover);border-color:var(--accent)}
 .article-header{margin-bottom:2rem}
-.article-meta{
-  font-size:.85rem;color:var(--accent);font-weight:600;
-  text-transform:uppercase;letter-spacing:.5px;margin-bottom:.75rem;
-}
-.article-title{
-  font-size:clamp(1.6rem,4vw,2.4rem);font-weight:800;
-  margin-bottom:1rem;letter-spacing:-.5px;line-height:1.2;
-}
+.article-meta{font-size:.85rem;color:var(--accent);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.75rem}
+.article-title{font-size:clamp(1.6rem,4vw,2.4rem);font-weight:800;margin-bottom:1rem;letter-spacing:-.5px;line-height:1.2}
 .article-author{color:var(--text-secondary);font-size:.9rem}
-.article-image{
-  width:100%;max-height:500px;object-fit:cover;
-  border-radius:14px;margin-bottom:2rem;
-}
-.article-content{
-  font-size:1.05rem;line-height:1.8;white-space:pre-wrap;
-  word-break:break-word;color:var(--text-primary);
-}
+.article-image{width:100%;max-height:500px;object-fit:cover;border-radius:14px;margin-bottom:2rem}
+.article-content{font-size:1.05rem;line-height:1.8;white-space:pre-wrap;word-break:break-word;color:var(--text-primary)}
 
-/* ФОРМА ПРЕДЛОЖЕНИЯ */
 .propose-form-wrap{display:none;max-width:700px;margin:0 auto}
 .propose-form-wrap.active{display:block}
 .form-group{margin-bottom:1.2rem}
-.form-label{
-  display:block;font-size:.85rem;font-weight:600;margin-bottom:.5rem;
-  color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px;
-}
+.form-label{display:block;font-size:.85rem;font-weight:600;margin-bottom:.5rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px}
 .form-control{
-  width:100%;padding:.75rem 1rem;background:var(--bg-secondary);
-  border:1px solid var(--border);border-radius:8px;
-  color:var(--text-primary);font-size:.95rem;font-family:inherit;
-  transition:all .2s;
+  width:100%;padding:.75rem 1rem;background:var(--bg-secondary);border:1px solid var(--border);
+  border-radius:8px;color:var(--text-primary);font-size:.95rem;font-family:inherit;transition:all .2s;
 }
-.form-control:focus{
-  outline:none;border-color:var(--accent);
-  box-shadow:0 0 0 3px var(--accent-glow);
-}
+.form-control:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
 textarea.form-control{resize:vertical;min-height:180px}
 .btn{
-  display:inline-flex;align-items:center;justify-content:center;gap:.5rem;
-  padding:.75rem 1.5rem;border:none;border-radius:8px;
-  background:var(--accent);color:#fff;font-size:.9rem;font-weight:600;
+  display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.75rem 1.5rem;
+  border:none;border-radius:8px;background:var(--accent);color:#fff;font-size:.9rem;font-weight:600;
   cursor:pointer;transition:all .2s;font-family:inherit;width:100%;
 }
 .btn:hover{background:var(--accent-hover);box-shadow:0 0 20px var(--accent-glow)}
 .btn:disabled{opacity:.6;cursor:not-allowed}
+.hp-field{position:absolute!important;left:-10000px!important;width:1px;height:1px;overflow:hidden}
+#turnstile-container{min-height:65px}
 
-.hp-field{
-  position:absolute!important;left:-10000px!important;
-  width:1px;height:1px;overflow:hidden;
-}
-
-.empty-state,.loading-state{
-  text-align:center;padding:4rem 1rem;color:var(--text-secondary);
-}
-.spinner{
-  width:40px;height:40px;border:3px solid var(--border);
-  border-top-color:var(--accent);border-radius:50%;
-  animation:spin .8s linear infinite;margin:0 auto 1rem;
-}
+.empty-state,.loading-state{text-align:center;padding:4rem 1rem;color:var(--text-secondary)}
+.spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 1rem}
 @keyframes spin{to{transform:rotate(360deg)}}
-
-.alert{
-  padding:.75rem 1rem;border-radius:8px;font-size:.9rem;
-  margin-bottom:1rem;display:none;
-}
+.alert{padding:.75rem 1rem;border-radius:8px;font-size:.9rem;margin-bottom:1rem;display:none}
 .alert.active{display:block}
 .alert-error{background:rgba(220,38,38,.15);color:#f87171;border:1px solid rgba(220,38,38,.3)}
 .alert-success{background:rgba(22,163,74,.15);color:#4ade80;border:1px solid rgba(22,163,74,.3)}
-
 .hidden{display:none!important}
 .text-error{color:var(--danger)}
 
@@ -241,7 +163,6 @@ textarea.form-control{resize:vertical;min-height:180px}
 
 <main class="container">
 
-  <!-- ЛЕНТА -->
   <section id="feedView" class="feed-view">
     <h1 class="page-title">Последние новости</h1>
     <p class="page-subtitle">Свежие публикации от White News</p>
@@ -255,13 +176,11 @@ textarea.form-control{resize:vertical;min-height:180px}
     </div>
   </section>
 
-  <!-- СТРАНИЦА СТАТЬИ -->
   <section id="articleView" class="article-view">
     <button class="article-back" type="button" id="backBtn">← Назад к ленте</button>
     <div id="articleContent"></div>
   </section>
 
-  <!-- ФОРМА ПРЕДЛОЖЕНИЯ -->
   <section id="proposeView" class="propose-form-wrap">
     <h1 class="page-title">Предложить статью</h1>
     <p class="page-subtitle">Отправьте новость на модерацию — после одобрения она появится в ленте</p>
@@ -292,10 +211,15 @@ textarea.form-control{resize:vertical;min-height:180px}
                maxlength="100" autocomplete="off" placeholder="Как вас подписать?">
       </div>
 
-      <!-- Honeypot: скрытое поле, которое заполняют только боты -->
+      <!-- Honeypot -->
       <div class="hp-field" aria-hidden="true">
         <label for="pWebsite">Website</label>
         <input type="text" id="pWebsite" name="website" tabindex="-1" autocomplete="off">
+      </div>
+
+      <!-- Turnstile -->
+      <div class="form-group">
+        <div id="turnstile-container"></div>
       </div>
 
       <button type="submit" class="btn" id="pSubmit">Отправить на модерацию</button>
@@ -305,53 +229,48 @@ textarea.form-control{resize:vertical;min-height:180px}
 </main>
 
 <script>
+'use strict';
+
 // ================== НАСТРОЙКИ ==================
 const SUPABASE_URL = 'https://ppgrmofgafqwmhdpequt.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_Ngb4i_VLSAW5ac1VmOO9GA_q-ErQLKt';
+const SUBMIT_ENDPOINT = SUPABASE_URL + '/functions/v1/smart-handler';
+const TURNSTILE_SITE_KEY = '0x4AAAAAAAe-bdCPRuFJJ1kuB';
 // ===============================================
 
 const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
 const RATE_KEY = 'wn_propose_times';
-const RATE_MAX = 3;                 // не более 3 отправок
-const RATE_WINDOW_MS = 60 * 60e3;   // в час
-const MIN_FILL_TIME_MS = 3000;      // форма должна заполняться не быстрее 3 секунд
+const RATE_MAX = 3;
+const RATE_WINDOW_MS = 60 * 60e3;
+const MIN_FILL_TIME_MS = 3000;
 
 let allNews = [];
 let formOpenedAt = Date.now();
+let turnstileToken = null;
+let turnstileWidgetId = null;
 
 // ---------- Утилиты ----------
-function escapeHtml(text){
-  return String(text ?? '')
-    .replace(/&/g,'&amp;')
-    .replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;')
-    .replace(/'/g,'&#39;');
-}
-
 function formatDate(iso){
   const d = new Date(iso);
   if(Number.isNaN(d.getTime())) return '';
   return d.toLocaleDateString('ru-RU',{
-    day:'numeric',month:'long',year:'numeric',
-    hour:'2-digit',minute:'2-digit'
+    day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'
   });
 }
 
-// Разрешаем только http/https абсолютные URL
-function safeUrl(raw){
+// Разрешаем только абсолютные https:// URL
+function safeHttpsUrl(raw){
   if(!raw || typeof raw !== 'string') return null;
   const trimmed = raw.trim();
   if(!trimmed) return null;
   try{
     const u = new URL(trimmed);
-    if(u.protocol === 'http:' || u.protocol === 'https:') return u.href;
+    if(u.protocol === 'https:') return u.href;
   }catch(_){}
   return null;
 }
 
-// Мини-хелпер для создания DOM
 function el(tag, attrs = {}, children = []){
   const node = document.createElement(tag);
   for(const [k,v] of Object.entries(attrs)){
@@ -372,17 +291,12 @@ function el(tag, attrs = {}, children = []){
   return node;
 }
 
-// Безопасная вставка картинки: onerror без inline-обработчика
 function makeImage(src, className, alt = ''){
-  const safe = safeUrl(src);
+  const safe = safeHttpsUrl(src);
   if(!safe) return null;
   const img = el('img', {
-    src: safe,
-    alt,
-    class: className,
-    loading: 'lazy',
-    referrerpolicy: 'no-referrer',
-    decoding: 'async'
+    src: safe, alt, class: className, loading: 'lazy',
+    referrerpolicy: 'no-referrer', decoding: 'async'
   });
   img.addEventListener('error', () => { img.remove(); });
   return img;
@@ -426,29 +340,23 @@ function showArticle(id){
   const container = document.getElementById('articleContent');
   container.replaceChildren();
 
-  const header = el('div', {class:'article-header'}, [
+  container.appendChild(el('div', {class:'article-header'}, [
     el('div', {class:'article-meta', text: formatDate(n.created_at)}),
     el('h1',  {class:'article-title', text: n.title || ''}),
     el('div', {class:'article-author', text: '✍️ ' + (n.author || 'White News')})
-  ]);
-  container.appendChild(header);
+  ]));
 
   const img = makeImage(n.image_url, 'article-image');
   if(img) container.appendChild(img);
 
-  container.appendChild(
-    el('div', {class:'article-content', text: n.content || ''})
-  );
-
+  container.appendChild(el('div', {class:'article-content', text: n.content || ''}));
   window.scrollTo(0,0);
 }
 
 // ---------- Рендер ленты ----------
 function buildCard(n){
   const card = el('article', {
-    class: 'news-card',
-    tabindex: '0',
-    role: 'button',
+    class: 'news-card', tabindex: '0', role: 'button',
     'aria-label': 'Открыть статью: ' + (n.title || ''),
     dataset: {id: String(n.id)}
   });
@@ -456,7 +364,7 @@ function buildCard(n){
   const img = makeImage(n.image_url, 'news-card-image');
   if(img) card.appendChild(img);
 
-  const body = el('div', {class:'news-card-body'}, [
+  card.appendChild(el('div', {class:'news-card-body'}, [
     el('div', {class:'news-card-date',  text: formatDate(n.created_at)}),
     el('h2',  {class:'news-card-title', text: n.title || ''}),
     el('p',   {class:'news-card-content', text: n.content || ''}),
@@ -464,8 +372,7 @@ function buildCard(n){
       el('span', {text: '✍️ ' + (n.author || 'White News')}),
       el('span', {class:'news-card-readmore', text: 'Читать →'})
     ])
-  ]);
-  card.appendChild(body);
+  ]));
 
   card.addEventListener('click', () => showArticle(n.id));
   card.addEventListener('keydown', (e) => {
@@ -474,7 +381,6 @@ function buildCard(n){
       showArticle(n.id);
     }
   });
-
   return card;
 }
 
@@ -511,14 +417,12 @@ async function loadNews(){
     container.appendChild(frag);
   }catch(err){
     console.error(err);
-    loading.replaceChildren(
-      el('p', {class:'text-error', text: 'Ошибка загрузки новостей'})
-    );
+    loading.replaceChildren(el('p', {class:'text-error', text: 'Ошибка загрузки новостей'}));
   }
 }
 
-// ---------- Форма предложения ----------
-function checkRateLimit(){
+// ---------- Локальный rate limit (defense in depth) ----------
+function checkLocalRateLimit(){
   try{
     const now = Date.now();
     const times = JSON.parse(localStorage.getItem(RATE_KEY) || '[]')
@@ -527,11 +431,22 @@ function checkRateLimit(){
     times.push(now);
     localStorage.setItem(RATE_KEY, JSON.stringify(times));
     return true;
-  }catch(_){
-    return true; // если localStorage недоступен, не блокируем
-  }
+  }catch(_){ return true; }
 }
 
+// ---------- Turnstile ----------
+function initTurnstile(){
+  if(!window.turnstile) return;
+  if(!TURNSTILE_SITE_KEY || TURNSTILE_SITE_KEY.startsWith('REPLACE_')) return;
+  turnstileWidgetId = window.turnstile.render('#turnstile-container', {
+    sitekey: TURNSTILE_SITE_KEY,
+    callback: (token) => { turnstileToken = token; },
+    'expired-callback': () => { turnstileToken = null; },
+    'error-callback': () => { turnstileToken = null; }
+  });
+}
+
+// ---------- Форма ----------
 const proposeForm  = document.getElementById('proposeForm');
 const proposeAlert = document.getElementById('proposeAlert');
 const pSubmit      = document.getElementById('pSubmit');
@@ -545,70 +460,80 @@ function clearAlert(){
   proposeAlert.textContent = '';
 }
 
-document.getElementById('proposeForm').addEventListener('submit', async (e) => {
+proposeForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   clearAlert();
 
-  // Honeypot: если поле заполнено — это бот. Молча выходим.
-  const honeypot = document.getElementById('pWebsite').value;
-  if(honeypot){ return; }
+  // Honeypot
+  if(document.getElementById('pWebsite').value){ return; }
 
-  // Защита от слишком быстрой отправки (боты заполняют мгновенно)
+  // Слишком быстрое заполнение = бот
   if(Date.now() - formOpenedAt < MIN_FILL_TIME_MS){
     setAlert('error', 'Пожалуйста, заполните форму внимательнее.');
     return;
   }
 
-  const title   = document.getElementById('pTitle').value.trim();
-  const content = document.getElementById('pContent').value.trim();
-  const imageRaw= document.getElementById('pImage').value.trim();
-  const author  = document.getElementById('pAuthor').value.trim();
+  const title    = document.getElementById('pTitle').value.trim();
+  const content  = document.getElementById('pContent').value.trim();
+  const imageRaw = document.getElementById('pImage').value.trim();
+  const author   = document.getElementById('pAuthor').value.trim();
 
-  // Валидация на клиенте (серверная — через RLS/Edge Function)
   if(title.length < 3 || title.length > 200){
-    setAlert('error', 'Заголовок должен быть от 3 до 200 символов.');
-    return;
+    setAlert('error', 'Заголовок должен быть от 3 до 200 символов.'); return;
   }
   if(content.length < 10 || content.length > 20000){
-    setAlert('error', 'Текст должен быть от 10 до 20 000 символов.');
-    return;
+    setAlert('error', 'Текст должен быть от 10 до 20 000 символов.'); return;
   }
   if(author.length > 100){
-    setAlert('error', 'Имя слишком длинное.');
-    return;
+    setAlert('error', 'Имя слишком длинное.'); return;
   }
   let imageUrl = null;
   if(imageRaw){
-    imageUrl = safeUrl(imageRaw);
+    imageUrl = safeHttpsUrl(imageRaw);
     if(!imageUrl){
-      setAlert('error', 'Ссылка на картинку должна начинаться с http:// или https://');
-      return;
+      setAlert('error', 'Ссылка на картинку должна начинаться с https://'); return;
     }
   }
 
-  if(!checkRateLimit()){
-    setAlert('error', 'Слишком много отправок. Попробуйте позже.');
-    return;
+  if(!TURNSTILE_SITE_KEY.startsWith('REPLACE_') && !turnstileToken){
+    setAlert('error', 'Пожалуйста, пройдите проверку капчи.'); return;
+  }
+
+  if(!checkLocalRateLimit()){
+    setAlert('error', 'Слишком много отправок. Попробуйте позже.'); return;
   }
 
   pSubmit.disabled = true;
   pSubmit.textContent = 'Отправка...';
 
-  const payload = {
-    title,
-    content,
-    image_url: imageUrl,
-    author: author || 'Гость',
-    is_published: false,
-    status: 'pending'
-  };
-
   try{
-    const {error} = await client.from('news').insert(payload);
-    if(error) throw error;
+    const res = await fetch(SUBMIT_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_PUBLISHABLE_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_PUBLISHABLE_KEY
+      },
+      body: JSON.stringify({
+        title, content, image_url: imageUrl, author,
+        website: '',
+        turnstile_token: turnstileToken
+      })
+    });
+
+    if(res.status === 429){
+      setAlert('error', 'Слишком много отправок. Попробуйте позже.'); return;
+    }
+    if(!res.ok){
+      setAlert('error', 'Не удалось отправить. Попробуйте позже.'); return;
+    }
 
     setAlert('success', '✓ Спасибо! Ваша статья отправлена на модерацию.');
     proposeForm.reset();
+    if(turnstileWidgetId !== null && window.turnstile){
+      window.turnstile.reset(turnstileWidgetId);
+      turnstileToken = null;
+    }
     formOpenedAt = Date.now();
     setTimeout(clearAlert, 5000);
   }catch(err){
@@ -626,6 +551,7 @@ document.getElementById('feedBtn').addEventListener('click', showFeed);
 document.getElementById('proposeBtn').addEventListener('click', showPropose);
 document.getElementById('backBtn').addEventListener('click', showFeed);
 
+window.addEventListener('load', initTurnstile);
 loadNews();
 </script>
 </body>
