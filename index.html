@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>White News</title>
+<meta name="description" content="White News — последние новости и публикации">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --bg-primary:#0a0e1a;
+  --bg-secondary:#0f1729;
+  --bg-card:#131c31;
+  --bg-hover:#1a2540;
+  --border:#1e2a4a;
+  --accent:#2563eb;
+  --accent-hover:#3b82f6;
+  --accent-glow:rgba(37,99,235,.3);
+  --text-primary:#e8edf7;
+  --text-secondary:#8b98b8;
+  --success:#16a34a;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{overflow-x:hidden}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  background:var(--bg-primary);color:var(--text-primary);
+  min-height:100vh;line-height:1.6;
+  background-image:
+    radial-gradient(ellipse at top,rgba(37,99,235,.15),transparent 60%),
+    radial-gradient(ellipse at bottom,rgba(37,99,235,.08),transparent 60%);
+  background-attachment:fixed;
+}
+.header{
+  position:sticky;top:0;z-index:100;
+  background:rgba(10,14,26,.85);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  padding:1rem 1.5rem;
+}
+.header-inner{
+  max-width:1200px;margin:0 auto;
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;
+}
+.logo{
+  font-size:1.4rem;font-weight:800;letter-spacing:-.5px;
+  display:flex;align-items:center;gap:.5rem;cursor:pointer;
+}
+.logo span{color:var(--accent)}
+.logo::before{
+  content:'';width:10px;height:10px;border-radius:50%;
+  background:var(--accent);box-shadow:0 0 12px var(--accent);
+}
+.nav{display:flex;gap:.75rem;align-items:center}
+.nav-btn{
+  background:transparent;border:1px solid var(--border);color:var(--text-primary);
+  padding:.55rem 1rem;border-radius:8px;font-size:.85rem;font-weight:600;
+  cursor:pointer;transition:all .2s;font-family:inherit;white-space:nowrap;
+}
+.nav-btn:hover{background:var(--bg-hover);border-color:var(--accent)}
+.nav-btn.primary{background:var(--accent);border-color:var(--accent)}
+.nav-btn.primary:hover{background:var(--accent-hover)}
+.container{max-width:1200px;margin:0 auto;padding:2rem 1.5rem 4rem}
+.page-title{
+  font-size:clamp(1.8rem,4vw,2.5rem);font-weight:800;
+  margin-bottom:.5rem;letter-spacing:-1px;
+}
+.page-subtitle{color:var(--text-secondary);margin-bottom:2rem}
+.news-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
+  gap:1.5rem;
+}
+.news-card{
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:14px;overflow:hidden;transition:all .25s;
+  display:flex;flex-direction:column;cursor:pointer;
+}
+.news-card:hover{
+  transform:translateY(-4px);border-color:var(--accent);
+  box-shadow:0 12px 30px rgba(0,0,0,.4),0 0 0 1px var(--accent);
+}
+.news-card-image{
+  width:100%;height:200px;object-fit:cover;
+  background:var(--bg-secondary);display:block;
+}
+.news-card-body{padding:1.25rem;display:flex;flex-direction:column;flex:1}
+.news-card-date{
+  font-size:.75rem;color:var(--accent);font-weight:600;
+  text-transform:uppercase;letter-spacing:.5px;margin-bottom:.5rem;
+}
+.news-card-title{
+  font-size:1.15rem;font-weight:700;margin-bottom:.6rem;
+  line-height:1.3;word-break:break-word;
+}
+.news-card-content{
+  color:var(--text-secondary);font-size:.92rem;flex:1;
+  white-space:pre-wrap;word-break:break-word;
+  display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;
+  overflow:hidden;
+}
+.news-card-footer{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);
+  font-size:.8rem;color:var(--text-secondary);
+}
+.news-card-readmore{
+  color:var(--accent);font-weight:600;font-size:.85rem;
+}
+
+/* СТРАНИЦА СТАТЬИ */
+.article-view{display:none}
+.article-view.active{display:block}
+.article-back{
+  background:transparent;border:1px solid var(--border);color:var(--text-primary);
+  padding:.55rem 1rem;border-radius:8px;font-size:.85rem;font-weight:600;
+  cursor:pointer;transition:all .2s;font-family:inherit;margin-bottom:1.5rem;
+}
+.article-back:hover{background:var(--bg-hover);border-color:var(--accent)}
+.article-header{margin-bottom:2rem}
+.article-meta{
+  font-size:.85rem;color:var(--accent);font-weight:600;
+  text-transform:uppercase;letter-spacing:.5px;margin-bottom:.75rem;
+}
+.article-title{
+  font-size:clamp(1.6rem,4vw,2.4rem);font-weight:800;
+  margin-bottom:1rem;letter-spacing:-.5px;line-height:1.2;
+}
+.article-author{color:var(--text-secondary);font-size:.9rem}
+.article-image{
+  width:100%;max-height:500px;object-fit:cover;
+  border-radius:14px;margin-bottom:2rem;
+}
+.article-content{
+  font-size:1.05rem;line-height:1.8;white-space:pre-wrap;
+  word-break:break-word;color:var(--text-primary);
+}
+
+/* ФОРМА ПРЕДЛОЖЕНИЯ */
+.propose-form-wrap{display:none;max-width:700px;margin:0 auto}
+.propose-form-wrap.active{display:block}
+.form-group{margin-bottom:1.2rem}
+.form-label{
+  display:block;font-size:.85rem;font-weight:600;margin-bottom:.5rem;
+  color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px;
+}
+.form-control{
+  width:100%;padding:.75rem 1rem;background:var(--bg-secondary);
+  border:1px solid var(--border);border-radius:8px;
+  color:var(--text-primary);font-size:.95rem;font-family:inherit;
+  transition:all .2s;
+}
+.form-control:focus{
+  outline:none;border-color:var(--accent);
+  box-shadow:0 0 0 3px var(--accent-glow);
+}
+textarea.form-control{resize:vertical;min-height:180px}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:.5rem;
+  padding:.75rem 1.5rem;border:none;border-radius:8px;
+  background:var(--accent);color:#fff;font-size:.9rem;font-weight:600;
+  cursor:pointer;transition:all .2s;font-family:inherit;width:100%;
+}
+.btn:hover{background:var(--accent-hover);box-shadow:0 0 20px var(--accent-glow)}
+.btn:disabled{opacity:.6;cursor:not-allowed}
+
+.empty-state,.loading-state{
+  text-align:center;padding:4rem 1rem;color:var(--text-secondary);
+}
+.spinner{
+  width:40px;height:40px;border:3px solid var(--border);
+  border-top-color:var(--accent);border-radius:50%;
+  animation:spin .8s linear infinite;margin:0 auto 1rem;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.alert{
+  padding:.75rem 1rem;border-radius:8px;font-size:.9rem;
+  margin-bottom:1rem;display:none;
+}
+.alert.active{display:block}
+.alert-error{background:rgba(220,38,38,.15);color:#f87171;border:1px solid rgba(220,38,38,.3)}
+.alert-success{background:rgba(22,163,74,.15);color:#4ade80;border:1px solid rgba(22,163,74,.3)}
+
+@media (max-width:768px){
+  .header{padding:.85rem 1rem}
+  .logo{font-size:1.15rem}
+  .nav-btn{padding:.45rem .7rem;font-size:.78rem}
+  .container{padding:1.5rem 1rem 3rem}
+  .news-grid{grid-template-columns:1fr;gap:1rem}
+  .article-title{font-size:1.5rem}
+  .article-content{font-size:1rem}
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="logo" onclick="showFeed()">White<span>News</span></div>
+    <div class="nav">
+      <button class="nav-btn" id="feedBtn" onclick="showFeed()">Лента</button>
+      <button class="nav-btn primary" id="proposeBtn" onclick="showPropose()">Предложить статью</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <!-- ЛЕНТА -->
+  <div id="feedView" class="feed-view">
+    <h1 class="page-title">Последние новости</h1>
+    <p class="page-subtitle">Свежие публикации от White News</p>
+    <div id="newsContainer" class="news-grid"></div>
+    <div id="loading" class="loading-state">
+      <div class="spinner"></div>
+      <p>Загрузка новостей...</p>
+    </div>
+    <div id="empty" class="empty-state" style="display:none">
+      <p>📭 Пока нет новостей</p>
+    </div>
+  </div>
+
+  <!-- СТРАНИЦА СТАТЬИ -->
+  <div id="articleView" class="article-view">
+    <button class="article-back" onclick="showFeed()">← Назад к ленте</button>
+    <div id="articleContent"></div>
+  </div>
+
+  <!-- ФОРМА ПРЕДЛОЖЕНИЯ -->
+  <div id="proposeView" class="propose-form-wrap">
+    <h1 class="page-title">Предложить статью</h1>
+    <p class="page-subtitle">Отправьте новость на модерацию — после одобрения она появится в ленте</p>
+
+    <div id="proposeAlert" class="alert"></div>
+
+    <form id="proposeForm">
+      <div class="form-group">
+        <label class="form-label">Заголовок *</label>
+        <input type="text" class="form-control" id="pTitle" required maxlength="200" placeholder="О чём ваша новость?">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Текст статьи *</label>
+        <textarea class="form-control" id="pContent" required placeholder="Расскажите подробнее..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">URL картинки (необязательно)</label>
+        <input type="url" class="form-control" id="pImage" placeholder="https://...">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Ваше имя</label>
+        <input type="text" class="form-control" id="pAuthor" maxlength="100" placeholder="Как вас подписать?">
+      </div>
+      <button type="submit" class="btn" id="pSubmit">Отправить на модерацию</button>
+    </form>
+  </div>
+
+</main>
+
+<script>
+// ================== НАСТРОЙКИ ==================
+const SUPABASE_URL = 'https://ppgrmofgafqwmhdpequt.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_Ngb4i_VLSAW5ac1VmOO9GA_q-ErQLKt';
+// ===============================================
+
+const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+let allNews = [];
+
+function escapeHtml(text){
+  const div = document.createElement('div');
+  div.textContent = text || '';
+  return div.innerHTML;
+}
+function formatDate(iso){
+  return new Date(iso).toLocaleDateString('ru-RU',{
+    day:'numeric',month:'long',year:'numeric',
+    hour:'2-digit',minute:'2-digit'
+  });
+}
+
+// ================== ПЕРЕКЛЮЧЕНИЕ ВИДОВ ==================
+function showFeed(){
+  document.getElementById('feedView').style.display='block';
+  document.getElementById('articleView').classList.remove('active');
+  document.getElementById('proposeView').classList.remove('active');
+  document.getElementById('feedBtn').classList.add('primary');
+  document.getElementById('proposeBtn').classList.remove('primary');
+}
+function showArticle(id){
+  const n = allNews.find(x => x.id === id);
+  if(!n) return;
+  document.getElementById('feedView').style.display='none';
+  document.getElementById('proposeView').classList.remove('active');
+  document.getElementById('articleView').classList.add('active');
+  document.getElementById('feedBtn').classList.remove('primary');
+
+  const img = n.image_url
+    ? `<img src="${escapeHtml(n.image_url)}" class="article-image" alt="" onerror="this.style.display='none'">`
+    : '';
+
+  document.getElementById('articleContent').innerHTML = `
+    <div class="article-header">
+      <div class="article-meta">${formatDate(n.created_at)}</div>
+      <h1 class="article-title">${escapeHtml(n.title)}</h1>
+      <div class="article-author">✍️ ${escapeHtml(n.author || 'White News')}</div>
+    </div>
+    ${img}
+    <div class="article-content">${escapeHtml(n.content)}</div>
+  `;
+  window.scrollTo(0,0);
+}
+function showPropose(){
+  document.getElementById('feedView').style.display='none';
+  document.getElementById('articleView').classList.remove('active');
+  document.getElementById('proposeView').classList.add('active');
+  document.getElementById('proposeBtn').classList.add('primary');
+  document.getElementById('feedBtn').classList.remove('primary');
+  window.scrollTo(0,0);
+}
+
+// ================== РЕНДЕР ЛЕНТЫ ==================
+function renderCard(n){
+  const img = n.image_url
+    ? `<img src="${escapeHtml(n.image_url)}" alt="" class="news-card-image" loading="lazy" onerror="this.style.display='none'">`
+    : '';
+  return `
+    <article class="news-card" onclick="showArticle(${n.id})">
+      ${img}
+      <div class="news-card-body">
+        <div class="news-card-date">${formatDate(n.created_at)}</div>
+        <h2 class="news-card-title">${escapeHtml(n.title)}</h2>
+        <p class="news-card-content">${escapeHtml(n.content)}</p>
+        <div class="news-card-footer">
+          <span>✍️ ${escapeHtml(n.author || 'White News')}</span>
+          <span class="news-card-readmore">Читать →</span>
+        </div>
+      </div>
+    </article>`;
+}
+
+async function loadNews(){
+  const container = document.getElementById('newsContainer');
+  const loading = document.getElementById('loading');
+  const empty = document.getElementById('empty');
+
+  loading.style.display='block';
+  empty.style.display='none';
+  container.innerHTML='';
+
+  try{
+    const {data,error} = await client
+      .from('news').select('*')
+      .eq('is_published', true)
+      .eq('status', 'published')
+      .order('created_at',{ascending:false});
+    if(error) throw error;
+
+    loading.style.display='none';
+    allNews = data || [];
+
+    if(!data || data.length===0){ empty.style.display='block'; return; }
+    container.innerHTML = data.map(renderCard).join('');
+  }catch(err){
+    console.error(err);
+    loading.innerHTML = '<p style="color:#f87171">Ошибка загрузки новостей</p>';
+  }
+}
+
+// ================== ФОРМА ПРЕДЛОЖЕНИЯ ==================
+document.getElementById('proposeForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = document.getElementById('pSubmit');
+  const alert = document.getElementById('proposeAlert');
+  btn.disabled = true;
+  btn.textContent = 'Отправка...';
+  alert.classList.remove('active');
+
+  const payload = {
+    title: document.getElementById('pTitle').value.trim(),
+    content: document.getElementById('pContent').value.trim(),
+    image_url: document.getElementById('pImage').value.trim() || null,
+    author: document.getElementById('pAuthor').value.trim() || 'Гость',
+    is_published: false,
+    status: 'pending'
+  };
+
+  const {error} = await client.from('news').insert(payload);
+
+  btn.disabled = false;
+  btn.textContent = 'Отправить на модерацию';
+
+  if(error){
+    alert.className = 'alert alert-error active';
+    alert.textContent = 'Ошибка: ' + error.message;
+    return;
+  }
+
+  alert.className = 'alert alert-success active';
+  alert.textContent = '✓ Спасибо! Ваша статья отправлена на модерацию.';
+  e.target.reset();
+  setTimeout(()=>alert.classList.remove('active'), 5000);
+});
+
+loadNews();
+</script>
+</body>
+</html>
